@@ -2,7 +2,7 @@ name: Refresh Ads List
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 env:
