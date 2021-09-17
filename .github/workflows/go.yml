@@ -1,4 +1,4 @@
-name: Go
+name: Refresh Ads List
 
 on:
   schedule:
@@ -12,7 +12,7 @@ env:
   GH_API_TOKEN: ${{secrets.GH_API_TOKEN}}
 
 jobs:
-  build:
+  refresh_ads_list:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
