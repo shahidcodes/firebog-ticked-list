@@ -21,7 +21,7 @@ https://raw.githubusercontent.com/shahidcodes/firebog-ticked-list/main/ads.txt
 
 ## More
 
-Script scheduled to auto run every 5 min but github scheduled workflows tends to get delayed.
+Script scheduled to auto run every 6 hours but github scheduled workflows tends to get delayed.
 
 ## Author
 
