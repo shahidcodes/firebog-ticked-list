@@ -80,6 +80,7 @@ func UploadToGithub(fileContent string) (bool, *http.Response) {
 		log.Fatal("HTTP Error: ", err)
 	}
 
+	fmt.Println("uploaded, status=", resp.StatusCode)
 	return resp.StatusCode == 200, resp
 
 }
