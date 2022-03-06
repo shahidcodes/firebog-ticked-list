@@ -64,5 +64,8 @@ func main() {
 	}
 	fmt.Println("all urls are fetched")
 	urlsJoined := strings.Join(urls, "\n")
-	UploadToGithub(urlsJoined)
+
+	if !IsBlockListSame(urlsJoined) {
+		UploadToGithub(urlsJoined)
+	}
 }
