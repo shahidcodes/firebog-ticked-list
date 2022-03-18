@@ -54,18 +54,19 @@ func readUrl(url string) []string {
 }
 
 func main() {
-	urlSlice := readUrl(LIST_URL)
-	urlSlice = urlSlice[:len(urlSlice)-1] // removes last empty line
-	var urls []string
-	for _, url := range urlSlice {
-		fmt.Println("fetching", url)
-		blockedUrls := readUrl(url)
-		urls = append(urls, blockedUrls...)
-	}
-	fmt.Println("all urls are fetched")
-	urlsJoined := strings.Join(urls, "\n")
+	UploadToGithub("this is me")
+	// urlSlice := readUrl(LIST_URL)
+	// urlSlice = urlSlice[:len(urlSlice)-1] // removes last empty line
+	// var urls []string
+	// for _, url := range urlSlice {
+	// 	fmt.Println("fetching", url)
+	// 	blockedUrls := readUrl(url)
+	// 	urls = append(urls, blockedUrls...)
+	// }
+	// fmt.Println("all urls are fetched")
+	// urlsJoined := strings.Join(urls, "\n")
 
-	if !IsBlockListSame(urlsJoined) {
-		UploadToGithub(urlsJoined)
-	}
+	// if !IsBlockListSame(urlsJoined) {
+	// 	UploadToGithub(urlsJoined)
+	// }
 }

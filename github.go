@@ -2,85 +2,81 @@ package main
 
 import (
 	"bytes"
-	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
-var FILE_PATH = fmt.Sprintf("/repos/%s/%s/contents/ads.txt", GH_OWNER, GH_REPO_NAME)
+var BASE_PATH = fmt.Sprintf("https://api.github.com/repos/%s/%s", GH_OWNER, GH_REPO_NAME)
+var CREATE_RELEASE_PATH = BASE_PATH + "/releases"
 
-type GitFileReq struct {
-	Message string `json:"message"`
-	Content string `json:"content"`
-	SHA     string `json:"sha"`
+type CreateReleaseResponse struct {
+	Url       string `json:"url"`
+	UploadUrl string `json:"upload_url"`
 }
 
-type GitTree struct {
-	PATH string `json:"path"`
-	MODE string `json:"mode"`
-	TYPE string `json:"type"`
-	SHA  string `json:"sha"`
-	SIZE int32  `json:"size"`
-	URL  string `json:"url"`
+func CreateTmpFile(content string) {
+	err := os.WriteFile("./tmp.txt", []byte(content), 0644)
+	CheckError(err)
 }
 
-type GitTreeResp struct {
-	SHA  string    `json:"sha"`
-	URL  string    `json:"url"`
-	Tree []GitTree `json:"tree"`
-}
-
-func getFileSHA() string {
-	req, _ := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s/git/trees/HEAD", GH_OWNER, GH_REPO_NAME), nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "token "+GH_API_TOKEN)
-	resp, _ := http.DefaultClient.Do(req)
-	responseObj := &GitTreeResp{}
-	err := json.NewDecoder(resp.Body).Decode(&responseObj)
+func UploadFile(fileContent string, uploadUrl string) {
+	url := uploadUrl + "?name=ads.txt&label=ads.txt"
+	method := "POST"
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	// file, errFile1 := os.Open("./tmp.txt")
+	// CheckError(errFile1)
+	// defer file.Close()
+	part1, errFile1 := writer.CreateFormFile("tmp.txt", "tmp.txt")
+	CheckError(errFile1)
+	_, errFile1 = io.Copy(part1, strings.NewReader(fileContent))
+	CheckError(errFile1)
+	err := writer.Close()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
-	var sha string
-	for _, tree := range responseObj.Tree {
-		if tree.PATH == "ads.txt" {
-			sha = tree.SHA
-			break
-		}
-	}
-	return sha
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+	CheckError(err)
+	req.Header.Add("Authorization", "token "+GH_API_TOKEN)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	res, err := client.Do(req)
+	CheckError(err)
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	CheckError(err)
+	fmt.Println(string(body))
 }
 
-func UploadToGithub(fileContent string) (bool, *http.Response) {
-	sha := getFileSHA()
-
-	gitFile := GitFileReq{
-		Content: b64.StdEncoding.EncodeToString([]byte(fileContent)),
-		Message: "UPDATE FILE",
-		SHA:     sha,
-	}
-
-	b, err := json.Marshal(gitFile)
-	if err != nil {
-		log.Fatal("JSON Error: ", err)
-	}
-	fmt.Println("OK")
-
-	br := bytes.NewBuffer(b)
-	fmt.Println("Uploading...")
-	req, err := http.NewRequest("PUT", "https://api.github.com"+FILE_PATH, br)
-	if err != nil {
-		log.Fatal(err)
-	}
+func UploadToGithub(fileContent string) {
+	now := time.Now()
+	values := map[string]string{"tag_name": fmt.Sprintf("%d", now.Unix())}
+	jsonValue, _ := json.Marshal(values)
+	fmt.Println(CREATE_RELEASE_PATH)
+	req, err := http.NewRequest("POST", CREATE_RELEASE_PATH, bytes.NewBuffer(jsonValue))
+	CheckError(err)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "token "+GH_API_TOKEN)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal("HTTP Error: ", err)
-	}
-
-	fmt.Println("uploaded, status=", resp.StatusCode)
-	return resp.StatusCode == 200, resp
-
+	CheckError(err)
+	body, err := ioutil.ReadAll(resp.Body)
+	CheckError(err)
+	var data CreateReleaseResponse
+	err = json.Unmarshal(body, &data)
+	CheckError(err)
+	uploadUrl := data.UploadUrl
+	// uploadUrl := "https://uploads.github.com/repos/shahidcodes/firebog-ticked-list/releases/62197065/assets{?name,label}"
+	uploadUrl = strings.Replace(uploadUrl, "{?name,label}", "", 1)
+	CreateTmpFile(fileContent)
+	UploadFile(fileContent, uploadUrl)
 }
