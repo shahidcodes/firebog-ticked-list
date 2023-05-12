@@ -119,7 +119,7 @@ func makeSetFromList(list string) map[string]bool {
 				url = urlSplit[0]
 			}
 
-			fmt.Println(url, listItem, urlSplit)
+			// fmt.Println(url, listItem, urlSplit)
 
 			set[url] = true
 		}
