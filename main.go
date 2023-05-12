@@ -62,7 +62,6 @@ func main() {
 		fmt.Println("fetching", url)
 		blockedUrls := readUrl(url)
 		urls = append(urls, blockedUrls...)
-		break
 	}
 	fmt.Println("all urls are fetched")
 	urlsJoined := strings.Join(urls, "\n")

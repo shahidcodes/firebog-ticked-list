@@ -135,7 +135,7 @@ func IsBlockListSame(newUrlList string) bool {
 	isSame := true
 
 	for k, _ := range newSet {
-		fmt.Println(k)
+		// fmt.Println(k)
 		isSame = oldSet[k]
 
 		if !isSame {
