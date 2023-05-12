@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -31,19 +30,11 @@ func UploadFile(fileContent string, uploadUrl string) {
 	method := "POST"
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	// file, errFile1 := os.Open("./tmp.txt")
+	fmt.Println("uploadUrl", uploadUrl)
+	// part1, errFile1 := writer.CreateFormField("tmp.txt")
 	// CheckError(errFile1)
-	// defer file.Close()
-	part1, errFile1 := writer.CreateFormFile("tmp.txt", "tmp.txt")
-	CheckError(errFile1)
-	_, errFile1 = io.Copy(part1, strings.NewReader(fileContent))
-	CheckError(errFile1)
-	err := writer.Close()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	// part1.Write([]byte(fileContent))
+	writer.WriteField("ads.txt", fileContent)
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
 	CheckError(err)
@@ -71,11 +62,12 @@ func UploadToGithub(fileContent string) {
 	CheckError(err)
 	body, err := ioutil.ReadAll(resp.Body)
 	CheckError(err)
+	fmt.Println(string(body))
 	var data CreateReleaseResponse
 	err = json.Unmarshal(body, &data)
 	CheckError(err)
+	fmt.Println(data)
 	uploadUrl := data.UploadUrl
-	// uploadUrl := "https://uploads.github.com/repos/shahidcodes/firebog-ticked-list/releases/62197065/assets{?name,label}"
 	uploadUrl = strings.Replace(uploadUrl, "{?name,label}", "", 1)
 	CreateTmpFile(fileContent)
 	UploadFile(fileContent, uploadUrl)
