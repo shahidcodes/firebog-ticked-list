@@ -16,7 +16,7 @@ I'm using [blocky](https://github.com/0xERR0R/blocky) as my DNS Sink Hole. It's 
 Use the url below to import all ad hosts
 
 ```
-https://raw.githubusercontent.com/shahidcodes/firebog-ticked-list/main/ads.txt
+https://raw.githubusercontent.com/shahidcodes/firebog-ticked-list/releases/latest/download/ads.txt
 ```
 
 ## More
